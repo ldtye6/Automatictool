@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>Roblox Link Tool</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #101827;
+      color: #f1f5f9;
+      font-family: system-ui, sans-serif;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #60a5fa;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: white;
+      font-size: 16px;
+      margin: 12px 0;
+    }
+
+    button {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      margin: 4px;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .secondary {
+      background: #475569;
+    }
+
+    .result {
+      overflow-wrap: anywhere;
+      margin-top: 16px;
+    }
+
+    .history-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+      overflow-wrap: anywhere;
+    }
+
+    .history-item a {
+      color: #93c5fd;
+    }
+
+    .note {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Roblox Link Tool</h1>
+
+    <div class="card">
+      <h2>Quản lý liên kết</h2>
+
+      <input
+        id="linkInput"
+        type="url"
+        placeholder="Dán liên kết vào đây..."
+      >
+
+      <button onclick="processLink()">Xử lý liên kết</button>
+      <button class="secondary" onclick="clearInput()">Xóa</button>
+
+      <div id="result" class="result"></div>
+    </div>
+
+    <div class="card">
+      <h2>Lịch sử</h2>
+      <div id="history"></div>
+      <button class="secondary" onclick="clearHistory()">
+        Xóa lịch sử
+      </button>
+    </div>
+
+    <p class="note">
+      Công cụ quản lý và mở liên kết. Không tự động vượt xác thực
+      hoặc lấy key từ dịch vụ bên thứ ba.
+    </p>
+  </div>
+
+  <script>
+    const input = document.getElementById("linkInput");
+    const result = document.getElementById("result");
+    const historyBox = document.getElementById("history");
+
+    function processLink() {
+      let value = input.value.trim();
+
+      if (!value) {
+        result.textContent = "Vui lòng nhập liên kết.";
+        return;
+      }
+
+      try {
+        const url = new URL(value);
+
+        if (!["http:", "https:"].includes(url.protocol)) {
+          throw new Error("Invalid protocol");
+        }
+
+        result.replaceChildren();
+
+        const link = document.createElement("p");
+        link.textContent = url.href;
+
+        const openButton = document.createElement("button");
+        openButton.textContent = "Mở liên kết";
+        openButton.onclick = () => {
+          window.open(url.href, "_blank", "noopener,noreferrer");
+        };
+
+        const copyButton = document.createElement("button");
+        copyButton.textContent = "Sao chép";
+        copyButton.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(url.href);
+            copyButton.textContent = "Đã sao chép!";
+          } catch {
+            copyButton.textContent = "Không thể sao chép";
+          }
+        };
+
+        result.append(link, openButton, copyButton);
+
+        saveHistory(url.href);
+      } catch {
+        result.textContent = "Liên kết không hợp lệ.";
+      }
+    }
+
+    function saveHistory(url) {
+      let history = JSON.parse(
+        localStorage.getItem("linkHistory") || "[]"
+      );
+
+      history = [url, ...history.filter(item => item !== url)]
+        .slice(0, 20);
+
+      localStorage.setItem("linkHistory", JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(
+        localStorage.getItem("linkHistory") || "[]"
+      );
+
+      historyBox.replaceChildren();
+
+      history.forEach(url => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.textContent = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+
+        item.appendChild(link);
+        historyBox.appendChild(item);
+      });
+    }
+
+    function clearInput() {
+      input.value = "";
+      result.textContent = "";
+    }
+
+    function clearHistory() {
+      localStorage.removeItem("linkHistory");
+      renderHistory();
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
