@@ -1,221 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101827">
-  <title>Roblox Link Tool</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 20px;
-      background: #101827;
-      color: #f1f5f9;
-      font-family: system-ui, sans-serif;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-    }
-
-    h1 {
-      text-align: center;
-      color: #60a5fa;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 24px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: 1px solid #475569;
-      background: #0f172a;
-      color: white;
-      font-size: 16px;
-      margin: 12px 0;
-    }
-
-    button {
-      padding: 12px 16px;
-      border: none;
-      border-radius: 10px;
-      background: #2563eb;
-      color: white;
-      font-size: 15px;
-      cursor: pointer;
-      margin: 4px;
-    }
-
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    .secondary {
-      background: #475569;
-    }
-
-    .result {
-      overflow-wrap: anywhere;
-      margin-top: 16px;
-    }
-
-    .history-item {
-      padding: 12px 0;
-      border-bottom: 1px solid #334155;
-      overflow-wrap: anywhere;
-    }
-
-    .history-item a {
-      color: #93c5fd;
-    }
-
-    .note {
-      color: #94a3b8;
-      font-size: 13px;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>KeyFlow — Link Assistant</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d32;--panel2:#1c2942;--text:#eef4ff;--muted:#9eacc8;--accent:#6ea8fe;--green:#42c77a;--border:#2c3a58}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#24345b 0,#0b1020 58%);font:16px system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh;padding:20px}
+main{max-width:720px;margin:28px auto}.brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#6ea8fe,#7c5cff);display:grid;place-items:center;font-weight:900}.brand h1{font-size:1.35rem;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:.9rem}
+.card{background:rgba(21,29,50,.96);border:1px solid var(--border);border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 18px 50px #0003}
+label{display:block;color:var(--muted);font-size:.9rem;margin:0 0 8px}input{width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;background:#0b1326;color:var(--text);font-size:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:#081326;font-weight:700;font-size:15px;cursor:pointer}button.secondary{background:#2b3854;color:var(--text)}button.success{background:var(--green);color:#052012}button:disabled{opacity:.45;cursor:not-allowed}
+.steps{display:grid;gap:10px;margin-top:16px}.step{display:flex;gap:12px;align-items:flex-start;padding:13px;border-radius:12px;background:#0e172b;border:1px solid var(--border)}.num{width:28px;height:28px;flex:0 0 28px;border-radius:50%;display:grid;place-items:center;background:#2b3854;font-weight:800}.step p{margin:2px 0;color:var(--muted);font-size:.92rem}.step strong{display:block;margin-bottom:3px}
+.status{margin-top:14px;padding:12px;border-radius:12px;background:#0e172b;color:var(--muted);overflow-wrap:anywhere}.status.good{color:#9ff0bd;border:1px solid #286c48}
+.note{color:var(--muted);font-size:.83rem;line-height:1.5}.foot{text-align:center;color:var(--muted);font-size:.8rem;margin:24px 0}
+@media(max-width:480px){body{padding:14px}main{margin:12px auto}.card{padding:17px}.row button{flex:1}}
+</style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>Roblox Link Tool</h1>
-
-    <div class="card">
-      <h2>Quản lý liên kết</h2>
-
-      <input
-        id="linkInput"
-        type="url"
-        placeholder="Dán liên kết vào đây..."
-      >
-
-      <button onclick="processLink()">Xử lý liên kết</button>
-      <button class="secondary" onclick="clearInput()">Xóa</button>
-
-      <div id="result" class="result"></div>
-    </div>
-
-    <div class="card">
-      <h2>Lịch sử</h2>
-      <div id="history"></div>
-      <button class="secondary" onclick="clearHistory()">
-        Xóa lịch sử
-      </button>
-    </div>
-
-    <p class="note">
-      Công cụ quản lý và mở liên kết. Không tự động vượt xác thực
-      hoặc lấy key từ dịch vụ bên thứ ba.
-    </p>
-  </div>
-
-  <script>
-    const input = document.getElementById("linkInput");
-    const result = document.getElementById("result");
-    const historyBox = document.getElementById("history");
-
-    function processLink() {
-      let value = input.value.trim();
-
-      if (!value) {
-        result.textContent = "Vui lòng nhập liên kết.";
-        return;
-      }
-
-      try {
-        const url = new URL(value);
-
-        if (!["http:", "https:"].includes(url.protocol)) {
-          throw new Error("Invalid protocol");
-        }
-
-        result.replaceChildren();
-
-        const link = document.createElement("p");
-        link.textContent = url.href;
-
-        const openButton = document.createElement("button");
-        openButton.textContent = "Mở liên kết";
-        openButton.onclick = () => {
-          window.open(url.href, "_blank", "noopener,noreferrer");
-        };
-
-        const copyButton = document.createElement("button");
-        copyButton.textContent = "Sao chép";
-        copyButton.onclick = async () => {
-          try {
-            await navigator.clipboard.writeText(url.href);
-            copyButton.textContent = "Đã sao chép!";
-          } catch {
-            copyButton.textContent = "Không thể sao chép";
-          }
-        };
-
-        result.append(link, openButton, copyButton);
-
-        saveHistory(url.href);
-      } catch {
-        result.textContent = "Liên kết không hợp lệ.";
-      }
-    }
-
-    function saveHistory(url) {
-      let history = JSON.parse(
-        localStorage.getItem("linkHistory") || "[]"
-      );
-
-      history = [url, ...history.filter(item => item !== url)]
-        .slice(0, 20);
-
-      localStorage.setItem("linkHistory", JSON.stringify(history));
-      renderHistory();
-    }
-
-    function renderHistory() {
-      const history = JSON.parse(
-        localStorage.getItem("linkHistory") || "[]"
-      );
-
-      historyBox.replaceChildren();
-
-      history.forEach(url => {
-        const item = document.createElement("div");
-        item.className = "history-item";
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.textContent = url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-
-        item.appendChild(link);
-        historyBox.appendChild(item);
-      });
-    }
-
-    function clearInput() {
-      input.value = "";
-      result.textContent = "";
-    }
-
-    function clearHistory() {
-      localStorage.removeItem("linkHistory");
-      renderHistory();
-    }
-
-    renderHistory();
-  </script>
+<main>
+<header class="brand"><div class="logo">KF</div><div><h1>KeyFlow</h1><p>Trợ lý xử lý liên kết và nhận key hợp lệ</p></div></header>
+<section class="card">
+<h2 style="margin-top:0">Mở liên kết key</h2>
+<label for="url">Liên kết Luarmor / trang cấp key</label>
+<input id="url" type="url" value="https://ads.luarmor.net/get_key?for=-dkAHbyOeBCOT" autocomplete="url" spellcheck="false">
+<div class="row">
+<button id="open" class="success">Mở quy trình</button>
+<button id="copy" class="secondary">Sao chép link</button>
+<button id="reset" class="secondary">Đặt lại</button>
+</div>
+<div id="status" class="status" role="status">Sẵn sàng. Mở link trong cùng trình duyệt để giữ phiên.</div>
+</section>
+<section class="card">
+<h2 style="margin-top:0">Hướng dẫn từng bước</h2>
+<div class="steps">
+<div class="step"><span class="num">1</span><div><strong>Mở trang Luarmor</strong><p>Nhấn “Mở quy trình”. Không dùng VPN và giữ cùng trình duyệt/ mạng trong suốt phiên.</p></div></div>
+<div class="step"><span class="num">2</span><div><strong>Hoàn thành checkpoint</strong><p>Nhấn START trên Luarmor rồi hoàn thành bước Linkvertise theo hướng dẫn của trang.</p></div></div>
+<div class="step"><span class="num">3</span><div><strong>Kiểm tra tiến độ</strong><p>Khi Luarmor hiển thị Progress 1/1, quay lại đây và nhấn nút bên dưới.</p></div></div>
+<div class="step"><span class="num">4</span><div><strong>Nhận key</strong><p>Trên trang Luarmor, nhấn GET A NEW KEY. Sao chép key được cấp và dùng theo hướng dẫn của script.</p></div></div>
+</div>
+<div class="row"><button id="done" class="success">Tôi đã thấy Progress 1/1</button><button id="return" class="secondary">Mở lại trang Luarmor</button></div>
+<p class="note">Nút tiến độ chỉ ghi nhận xác nhận của bạn trên thiết bị này; website không thể đọc hoặc xác minh trạng thái phiên Luarmor từ trang bên ngoài.</p>
+</section>
+<section class="card">
+<h2 style="margin-top:0">Kiểm tra nhanh</h2>
+<ul class="note">
+<li>Tiến độ vẫn 0/1: checkpoint chưa hoàn tất hoặc phiên đã hết hạn.</li>
+<li>Tiến độ 1/1 nhưng chưa có key: nhấn GET A NEW KEY trên Luarmor.</li>
+<li>Không thấy key: thử mở lại đúng URL trong cùng trình duyệt; không xóa cookie/site data.</li>
+<li>Không nhập key hoặc cookie vào công cụ bên thứ ba.</li>
+</ul>
+</section>
+<p class="foot">KeyFlow không vượt xác thực, không giải CAPTCHA và không trích xuất dữ liệu phiên. Key được cấp bởi Luarmor.</p>
+</main>
+<script>
+const input=document.getElementById('url'),statusBox=document.getElementById('status');
+function getUrl(){try{const u=new URL(input.value.trim());if(!['https:'].includes(u.protocol))throw 0;return u.href}catch{return null}}
+function status(msg,good=false){statusBox.textContent=msg;statusBox.className='status'+(good?' good':'')}
+document.getElementById('open').addEventListener('click',()=>{const u=getUrl();if(!u){status('Vui lòng nhập URL HTTPS hợp lệ.');return}status('Đã mở trang. Hoàn thành checkpoint trong cùng trình duyệt.');location.href=u});
+document.getElementById('return').addEventListener('click',()=>{const u=getUrl();if(u)window.open(u,'_blank','noopener,noreferrer');else status('URL không hợp lệ.')});
+document.getElementById('copy').addEventListener('click',async()=>{const u=getUrl();if(!u){status('URL không hợp lệ.');return}try{await navigator.clipboard.writeText(u);status('Đã sao chép liên kết.',true)}catch{status('Không thể sao chép tự động; hãy chọn và sao chép URL trong ô nhập.')}});
+document.getElementById('done').addEventListener('click',()=>{localStorage.setItem('keyflow_progress_confirmed','1');status('Đã ghi nhận bạn xác nhận Progress 1/1. Quay lại Luarmor và nhấn GET A NEW KEY.',true)});
+document.getElementById('reset').addEventListener('click',()=>{input.value='https://ads.luarmor.net/get_key?for=-dkAHbyOeBCOT';localStorage.removeItem('keyflow_progress_confirmed');status('Đã đặt lại.')});
+</script>
 </body>
 </html>
